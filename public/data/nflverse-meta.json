@@ -1,0 +1,13 @@
+{
+  "generatedAt": "2026-07-15T16:38:37.766Z",
+  "sources": {
+    "games": "https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv",
+    "players": "https://github.com/nflverse/nflverse-data/releases/download/players/players.csv"
+  },
+  "minLastSeason": 2015,
+  "counts": {
+    "games": 7548,
+    "playersTotal": 25033,
+    "playersKept": 8935
+  }
+}

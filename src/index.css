@@ -1,0 +1,413 @@
+/* ============================================================
+   Tally NFL
+   App styling built on the shared Tally Scorekeeper Design
+   System tokens (copied from Tally Baseball — see
+   docs/STARTER.md for what's shared vs. what to reinvent).
+   Metaphor: paper on a desk. Warm manila canvas, cream cards,
+   navy ink, kraft-tape spoiler covers. All numbers are mono
+   tabular figures; structural labels are condensed uppercase.
+   ============================================================ */
+@import './tokens/fonts.css';
+@import './tokens/colors.css';
+@import './tokens/typography.css';
+@import './tokens/spacing.css';
+@import './tokens/effects.css';
+
+:root {
+  color-scheme: light;
+  font-family: var(--font-body);
+  -webkit-text-size-adjust: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* === ALL-CAPS INVARIANT (carried over from Tally Baseball) ===
+   bbsbh renders every page uppercase via `#root * { text-transform:
+   uppercase }`, with a small set of deliberately-exempted "reads like a
+   sentence" surfaces (play-by-play copy, explainer paragraphs), guarded by
+   scripts/check-caps.mjs so nothing can quietly opt out. Deliberately NOT
+   turned on here yet — decide first whether football commentary/drive
+   descriptions want the same shouted-chrome-vs-sentence-copy split baseball
+   uses, then port scripts/check-caps.mjs + scripts/check-name-casing.mjs
+   from bbsbh once that's settled. Until then, do not hand-roll
+   `.toUpperCase()` per component — that's the exact drift the caps guard
+   exists to prevent. */
+
+/* Faint scorebook grid-paper texture — apply to canvas backgrounds */
+.paper-grid {
+  background-color: var(--bg-page);
+  background-image:
+    linear-gradient(var(--rule-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--rule-grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* ---- SealBox (copied verbatim from bbsbh/src/components/SealBox.jsx) ---- */
+.sealbox.cover {
+  width: 100%;
+  min-height: 132px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  cursor: pointer;
+  color: var(--seal-ink);
+  background: var(--seal-texture);
+}
+
+.cover__lock {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.cover__main {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: var(--w-bold);
+  color: var(--seal-ink);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sealbox.cover.sealbox--compact {
+  min-height: 0;
+  flex-direction: row;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+}
+.sealbox--compact .cover__lock {
+  font-size: 15px;
+}
+.sealbox--compact .cover__main {
+  font-size: 12px;
+}
+
+.statgrid {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--surface-inset);
+  animation: reveal var(--dur-slow) var(--ease-out);
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+button,
+a {
+  touch-action: manipulation;
+}
+
+/* ---- Screen shell ---- */
+.screen {
+  max-width: var(--app-width);
+  margin: 0 auto;
+  min-height: 100vh;
+  padding: var(--space-4);
+  padding-bottom: var(--space-12);
+}
+
+.plink {
+  border: none;
+  background: none;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.backbtn {
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  font-size: var(--fs-label);
+  letter-spacing: var(--ls-label);
+  padding: var(--space-2) 0;
+  cursor: pointer;
+}
+
+.section__title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+  font-weight: var(--w-semibold);
+  color: var(--text-heading);
+  margin: var(--space-6) 0 var(--space-2);
+}
+.section__title em {
+  font-style: normal;
+  font-size: var(--fs-caption);
+  color: var(--text-caption);
+}
+
+.tlogo {
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.tlogo--empty {
+  display: inline-block;
+  background: var(--surface-card);
+  border-radius: var(--radius-sm);
+}
+
+/* ---- Week slate (WeekPage) ---- */
+.weekhead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg-canvas);
+  padding-bottom: var(--space-3);
+  margin: 0 calc(var(--space-4) * -1);
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
+  border-bottom: var(--bw-hair) solid var(--border-hairline);
+}
+.weekhead__title {
+  padding-top: var(--space-2);
+}
+.weektabs {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+.weektabs__tab {
+  flex: 1;
+  border: var(--bw-hair) solid var(--border-rule);
+  background: var(--surface-card);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.weektabs__tab.is-active {
+  background: var(--accent-primary);
+  color: var(--text-on-ink);
+  border-color: var(--accent-primary);
+}
+.weeknav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+}
+.weeknav__arrow {
+  border: none;
+  background: none;
+  font-size: var(--fs-h2);
+  color: var(--text-heading);
+  cursor: pointer;
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+}
+.weeknav__arrow:disabled {
+  color: var(--border-rule);
+  cursor: default;
+}
+.weeknav__label {
+  font-family: var(--font-display);
+  font-weight: var(--w-semibold);
+  min-width: 10em;
+  text-align: center;
+}
+
+.gamelist {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.gamelist__empty {
+  padding: var(--space-6) 0;
+  text-align: center;
+}
+.gamecard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  background: var(--surface-card);
+  border: var(--bw-hair) solid var(--border-hairline);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+.gamecard__matchup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.gamecard__team {
+  gap: var(--space-2);
+}
+.gamecard__teamabbr {
+  font-family: var(--font-display);
+  font-weight: var(--w-semibold);
+}
+.gamecard__side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1);
+  min-width: 88px;
+}
+.gamecard__status {
+  color: var(--text-caption);
+}
+.gamecard__score {
+  font-size: var(--fs-num-md);
+}
+
+/* ---- Team page ---- */
+.team-hub__id {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: var(--space-4) 0;
+}
+.team-hub__name {
+  font-family: var(--font-display);
+  font-size: var(--fs-h1);
+  margin: 0 0 var(--space-1);
+}
+.team-hub__standing {
+  color: var(--text-caption);
+}
+
+.roster-list,
+.schedule-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.roster-row,
+.schedule-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  border-bottom: var(--bw-hair) solid var(--border-hairline);
+}
+.roster-row__jersey {
+  width: 2.5em;
+  color: var(--text-caption);
+}
+.roster-row__name {
+  flex: 1;
+}
+.roster-row__pos {
+  font-family: var(--font-display);
+  font-size: var(--fs-caption);
+  color: var(--text-caption);
+}
+.schedule-row__week {
+  width: 6em;
+  font-family: var(--font-display);
+  font-size: var(--fs-caption);
+  color: var(--text-caption);
+}
+.schedule-row__opp {
+  flex: 1;
+}
+.schedule-row__status {
+  color: var(--text-caption);
+}
+.schedule-row__result {
+  font-size: var(--fs-num-md);
+}
+
+/* ---- Player page ---- */
+.player-hero {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin: var(--space-4) 0;
+}
+.player-hero__shot {
+  width: var(--shot-xl-w);
+  height: var(--shot-xl-h);
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: var(--surface-card);
+}
+.player-hero__shot--empty {
+  border: var(--bw-hair) dashed var(--border-rule);
+}
+.player-hero__name {
+  font-family: var(--font-display);
+  font-size: var(--fs-h1);
+  margin: 0;
+}
+.player-hero__num {
+  color: var(--text-caption);
+  margin-left: var(--space-2);
+}
+.player-hero__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-muted);
+}
+
+.factgrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+  margin: var(--space-4) 0;
+}
+.fact__label {
+  margin-bottom: var(--space-1);
+}
+
+.ledger-wrap {
+  overflow-x: auto;
+}
+.ledger {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-small);
+}
+.ledger th,
+.ledger td {
+  padding: var(--space-2);
+  text-align: right;
+  border-bottom: var(--bw-hair) solid var(--border-hairline);
+  white-space: nowrap;
+}
+.ledger th.lft,
+.ledger td.lft {
+  text-align: left;
+}
+.ledger tfoot td {
+  font-weight: var(--w-semibold);
+  border-top: var(--bw-heavy) solid var(--border-rule);
+  border-bottom: none;
+}
