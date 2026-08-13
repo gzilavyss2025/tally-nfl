@@ -25,4 +25,15 @@ export default defineConfig({
     strictPort: true,
   },
   plugins: [react()],
+  // Vitest reads this same config (`npm test` / `npm run test:watch`).
+  // `environment: 'node'` (Vitest's default) is deliberate, not an
+  // oversight — this repo only unit-tests the pure logic layer (route
+  // parsing, selectors, the play-cursor math) that doesn't touch the DOM.
+  // Component/render testing would need `environment: 'jsdom'` plus
+  // @testing-library/react as separate additions once there's a component
+  // worth that investment; until then, real browser verification happens
+  // the way GamePage's was done (see the `run` skill), not via a unit test.
+  test: {
+    include: ['src/**/*.test.js'],
+  },
 })

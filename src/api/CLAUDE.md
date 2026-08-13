@@ -2,7 +2,7 @@
 
 Fetch wrappers and selectors around four undocumented/unofficial NFL data
 sources (ESPN, Sleeper, nflverse, TheSportsDB). ESPN is the only one with
-consuming screens today (`WeekPage`/`TeamPage`/`PlayerPage`, see
+consuming screens today (`WeekPage`/`GamePage`/`TeamPage`/`PlayerPage`, see
 `src/CLAUDE.md`'s Screens section); Sleeper/nflverse/TheSportsDB are wired
 but unconsumed, same as before. This file is the per-module catalog; the
 always-loaded root `CLAUDE.md` carries only the spoiler-rule summary and the
@@ -23,15 +23,23 @@ screen is expected to consume both sides of one game/team/player at once).
     *derivation* module (aggregating/reshaping, not just picking a field)
     this file used to flag as "not built yet, follow bbsbh's derive.js
     pattern." Both functions aggregate across many games (a season's
-    schedule, a player's career), a spoiler class ADR-0001's per-drive model
+    schedule, a player's career), a spoiler class ADR-0001's per-play model
     doesn't cover — see
     `docs/adr/0002-season-and-career-aggregates-are-sealed-as-one-block.md`
     for why, and why each is sealed as one block rather than gated per-game.
+  - `score.js`'s `selectPlayReveal(summary, index)` — the ADR-0001 reveal
+    unit itself: one play's `text`/`type`/`scoringPlay`/`awayScore`/
+    `homeScore`, re-flattened from `drives.previous[].plays[]`
+    independently of `select.js`'s `selectPlayList` (same "must stay
+    independently reveal-only-safe to import" reasoning as
+    `selectFinalScore`). `GamePage` (`src/CLAUDE.md`) is the only consumer.
 - **Spoiler-free** — safe at render top-level:
   - `select.js` (`selectMatchup`, `selectTeamIdentity`) — team identity/logo,
     status detail, `completed`/`state` flags, no score. `selectTeamIdentity`
     is shared by `team.js` and `player.js` too, rather than each reshaping a
-    `team` object its own way.
+    `team` object its own way. `selectPlayList(summary)` flattens
+    `drives.previous[].plays[]` into down/distance/clock/period/possession
+    per play — the counterpart to `score.js`'s `selectPlayReveal` above.
   - `team.js` (`selectTeamIdentityFromTeamInfo`, `selectScheduleRow`) —
     `selectScheduleRow` deliberately stops at who/when/home-or-away/
     completed, never `winner`/score.
@@ -55,11 +63,13 @@ screen is expected to consume both sides of one game/team/player at once).
   ESPN host); every other caller leaves it at the default.
 - `game.js` — `fetchGameSummary(eventId)`, ESPN's full game-page payload
   (box score, `drives`, leaders, odds). Returns the raw, unshaped response.
-  Not consumed by any screen today — `WeekPage`/`TeamPage` both get by on
-  `scoreboard.js`/`team.js`'s schedule endpoint instead, which already carry
-  everything those screens need (matchup, status, score, winner) without a
-  per-game fetch. Still here for when a single-game screen gets built (the
-  drives/leaders/odds detail nothing else exposes).
+  `GamePage`'s only fetch — the `drives` field is what `select.js`'s
+  `selectPlayList` and `score.js`'s `selectPlayReveal` both flatten.
+  `WeekPage`/`TeamPage` still get by on `scoreboard.js`/`team.js`'s
+  schedule endpoint instead for their own coarser whole-game seal, which
+  already carries everything those screens need (matchup, status, score,
+  winner) without a per-game fetch. The leaders/odds detail in the summary
+  response isn't read by anything yet.
 - `scoreboard.js` — `fetchScoreboard({ year, seasonType, week })`, one
   week's full slate. `WeekPage`'s only fetch. Verified live 2026-07-15
   across every 2025 week/seasonType combination — see `src/lib/weeks.js`'s
@@ -154,10 +164,11 @@ manual re-run. See `scripts/CLAUDE.md` for the generator's own detail
   behavior per endpoint (now including `scoreboard`, `teams/{id}`,
   `teams/{id}/roster`, `teams/{id}/schedule`, and the `site.web.api` athlete
   stats endpoint), every measured join rate, rate limits/caching per source.
-- `docs/adr/0001-drive-is-the-reveal-cursor-sealed-value-is-score-state.md` —
-  the verified ESPN field paths (`drives`, per-play scores) a future
-  drive-level reveal cursor will read, and the OT-game gate a drive
-  navigator will need.
+- `docs/adr/0001-play-is-the-reveal-cursor-sealed-value-is-score-state.md` +
+  `docs/adr/0003-play-cursor-advances-one-step-at-a-time.md` — the verified
+  ESPN field paths (`drives`, per-play scores) `select.js`/`score.js`'s
+  play selectors read, and the design `GamePage`/`usePlayCursor`
+  (`src/CLAUDE.md`) implement.
 - `docs/adr/0002-season-and-career-aggregates-are-sealed-as-one-block.md` —
   why `derive.js` exists and why it seals a whole aggregate rather than
   gating per-game.

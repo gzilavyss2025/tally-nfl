@@ -1,5 +1,5 @@
 import { fetchScoreboard } from '../api/scoreboard.js'
-import { useAsync } from '../hooks/useAsync.js'
+import { usePageData } from '../hooks/usePageData.js'
 import { useNav } from '../lib/nav.js'
 import { weekPath } from '../lib/route.js'
 import {
@@ -11,25 +11,22 @@ import {
   seasonTypeLabel,
 } from '../lib/weeks.js'
 import { GameCard } from '../components/GameCard.jsx'
-import { AsyncGate } from '../components/AsyncGate.jsx'
 
 const TABS = [SEASON_TYPE.PRESEASON, SEASON_TYPE.REGULAR, SEASON_TYPE.POSTSEASON]
 
 // Screen 1: the week slate — the NFL equivalent of bbsbh's GameSelect
 // (a whole day's games), but week-shaped rather than day-shaped, since a
-// week is football's actual scheduling unit. One SealBox per game (see
-// GameCard) instead of the drive-level reveal cursor ADR-0001 designed —
-// that cursor isn't implemented yet (see src/CLAUDE.md's "Reveal
-// granularity: decided, not implemented"), so this wireframe seals the
-// whole final score per game, same grain as App.jsx's original demo.
+// week is football's actual scheduling unit. One compact SealBox per game
+// (see GameCard) for an at-a-glance score, plus a GameLink into GamePage
+// for the real ADR-0001/0003 play-level cursor (see src/CLAUDE.md's
+// "Reveal granularity").
 export function WeekPage({ seasonType, week, season }) {
   const navigate = useNav()
-  const { loading, error, data } = useAsync(
+  const { data, gate } = usePageData(
     () => fetchScoreboard({ year: season, seasonType, week }),
     [season, seasonType, week],
+    'week',
   )
-
-  const gate = AsyncGate({ loading, error, data, noun: 'week' })
 
   const idx = weekIndex(seasonType, week)
   const goToIndex = (i) => {

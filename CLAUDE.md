@@ -45,9 +45,13 @@ npm run dev       # http://localhost:5174
 npm run build
 npm run preview   # http://localhost:4174
 npm run lint      # eslint . && check-claude-md.mjs
+npm run test      # vitest run — logic layer only, see src/CLAUDE.md
 ```
 
-There is no test suite yet.
+Unit tests cover the pure logic layer only (route parsing, selectors, the
+play-cursor math) — no component/render tests yet (`vitest`'s default
+`environment: 'node'`, no jsdom). Screen behavior is still verified by
+actually running the app (see the `run` skill), not a unit test.
 
 ### Reserved dev ports (multi-agent safe)
 
@@ -116,16 +120,17 @@ vs. inherited-but-unused) is in `src/CLAUDE.md`.
 Don't assume `bbsbh`'s architecture transfers. Three nested `CLAUDE.md` files
 carry the per-subsystem detail, loaded when you work there:
 
-- **`src/CLAUDE.md`** — three wireframe-stage screens (`WeekPage`/
+- **`src/CLAUDE.md`** — four wireframe-stage screens (`WeekPage`/`GamePage`/
   `TeamPage`/`PlayerPage`) behind a tiny hand-rolled History-API router (no
   react-router), the `SealBox` mechanics, the reveal-granularity design
-  (decided in ADR-0001, still not implemented at the drive level — today's
-  screens seal a whole game/aggregate at a time, a coarser stand-in), and
-  the design-system tokens.
+  (ADR-0001 + ADR-0003, now implemented — `GamePage` runs the play-level
+  cursor; `WeekPage`/`TeamPage` still seal a whole game/aggregate at a
+  time, a deliberately coarser view, not an unfinished one), and the
+  design-system tokens.
 - **`src/api/CLAUDE.md`** — fetch wrappers/selectors for four sources (ESPN,
   Sleeper, nflverse, TheSportsDB); only ESPN is consumed by any screen
-  today (`scoreboard.js`, `team.js`, `player.js`, plus `select.js`/
-  `score.js`/`derive.js` for the spoiler-free/reveal-only split).
+  today (`scoreboard.js`, `game.js`, `team.js`, `player.js`, plus
+  `select.js`/`score.js`/`derive.js` for the spoiler-free/reveal-only split).
   `nflverse.js` **does not hit nflverse directly** — its GitHub release
   files redirect to Azure Blob Storage with no CORS headers, so
   `scripts/fetch-nflverse.mjs` (`npm run data:nflverse`) downloads/trims

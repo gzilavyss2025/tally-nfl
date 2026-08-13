@@ -1,11 +1,12 @@
 # Reveal-granularity: options for the NFL equivalent of `revealedThrough`
 
-**Decided** — see `docs/adr/0001-drive-is-the-reveal-cursor-sealed-value-is-score-state.md`.
-The "plausible synthesis" below (drive as cursor, score-state as what's
-sealed) is what got picked, verified against real ESPN responses. The rest
-of this doc is kept as the menu of options considered and why they lost, per
-`bbsbh`'s convention (per ADR-0002/ADR-0008 in `bbsbh`) of the reveal
-mechanism's shape driving almost everything built on top of it.
+**Decided** — see `docs/adr/0001-play-is-the-reveal-cursor-sealed-value-is-score-state.md`.
+A refinement of the "plausible synthesis" below: **play**, not drive, is the
+cursor (score-state as what's sealed still holds), verified against real
+ESPN responses. The rest of this doc is kept as the menu of options
+considered and why they lost, per `bbsbh`'s convention (per ADR-0002/ADR-0008
+in `bbsbh`) of the reveal mechanism's shape driving almost everything built
+on top of it.
 
 Baseball's unit (half-inning) works because it's small, strictly ordered,
 and every play belongs to exactly one. Football's candidates trade off
@@ -44,15 +45,21 @@ those same three properties differently:
   what actually gets hidden (score state) vs. what the reveal cursor
   advances over (quarters/drives).
 
-## A plausible synthesis
-Reveal cursor = **drive** (matches "how far into the broadcast am I"),
-what's sealed at each step = **score state as of that drive's end**
-(matches "don't show me anything scoring-relevant early"). This mirrors
-bbsbh's split almost exactly: `revealedThrough` is a half-inning index (the
-cursor), but what's sealed behind each `SealBox` is that half's *runs*, not
-"did anything happen" — non-scoring events (a fielder's choice, a mound
-visit) are visible pre-reveal via the caller-gated selectors (ADR-0003,
-ADR-0010); only run-scoring outcomes wait for the tap.
+## A plausible synthesis (superseded — see ADR-0001)
+The original synthesis here proposed drive as cursor, score-state as what's
+sealed. ADR-0001 refines this one notch finer: reveal cursor = **play**
+(matches "how far into the broadcast am I" at the actual snap-by-snap grain
+a delayed viewer experiences, rather than drive's coarser "which drive"),
+what's sealed at each step = **score state as of that play** (matches
+"don't show me anything scoring-relevant early"). Drive lost to play for
+the same reason quarter lost to drive one level up: a drive can still
+contain several non-scoring snaps before its scoring play, so "revealed
+through drive N" reveals more than the viewer has actually watched. This
+mirrors bbsbh's split almost exactly: `revealedThrough` is a half-inning
+index (the cursor), but what's sealed behind each `SealBox` is that half's
+*runs*, not "did anything happen" — non-scoring events (a fielder's choice,
+a mound visit) are visible pre-reveal via the caller-gated selectors
+(ADR-0003, ADR-0010); only run-scoring outcomes wait for the tap.
 
 ## Overtime
 bbsbh's answer to "the game might not end when expected" is ADR-0008:

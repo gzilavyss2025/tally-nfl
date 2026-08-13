@@ -4,7 +4,7 @@
 // This is a public, unversioned, no-key API that can change shape without
 // notice — every field path a caller reads should be verified against a live
 // response before being trusted. See
-// docs/adr/0001-drive-is-the-reveal-cursor-sealed-value-is-score-state.md for
+// docs/adr/0001-play-is-the-reveal-cursor-sealed-value-is-score-state.md for
 // the fields verified so far (checked against event 401772830 — TB @ ATL,
 // 2025-09-07, Final — and event 401772834 — NYG @ DAL, 2025-09-14, Final/OT).
 

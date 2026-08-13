@@ -28,6 +28,36 @@ export function selectMatchup(x) {
   }
 }
 
+// One entry per play, flattened out of `drives.previous[].plays[]`
+// (fetchGameSummary only — a scoreboard event has no `drives`) in the same
+// chronological order the feed carries, which per ADR-0001 is the reveal
+// cursor's own order. Deliberately spoiler-free: down/distance, clock,
+// period, and who has the ball are never score-relevant, so this is safe to
+// call eagerly for every play up front (e.g. to size the play-cursor's
+// `total`, or to label the next sealed play before it's tapped). The
+// play's `text`/`type`/`scoringPlay`/`awayScore`/`homeScore` are NOT here —
+// see score.js's `selectPlayReveal`, which re-derives from the same raw
+// `drives` structure independently rather than wrapping this function, so
+// this selector's return shape can never accidentally start carrying a
+// spoiler field later.
+export function selectPlayList(summary) {
+  const drives = summary?.drives?.previous ?? []
+  const plays = []
+  for (const drive of drives) {
+    const driveTeam = drive.team ? selectTeamIdentity(drive.team) : null
+    for (const play of drive.plays ?? []) {
+      plays.push({
+        period: play.period?.number ?? null,
+        clock: play.clock?.displayValue ?? '',
+        downDistance: play.start?.shortDownDistanceText ?? '',
+        possession: play.start?.possessionText ?? '',
+        driveTeam,
+      })
+    }
+  }
+  return plays
+}
+
 // Team identity/logo is never a spoiler — used both here and by team.js's
 // own selectors, which is why it's factored out rather than inlined twice.
 // A scoreboard event's team object carries a singular `logo` string; a game

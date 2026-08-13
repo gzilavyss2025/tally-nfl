@@ -24,6 +24,42 @@ export function selectFinalScore(x) {
   }
 }
 
+// Duplicated flatten, not shared with select.js's selectPlayList, for the
+// same independently-reveal-only-safe reason as competitionOf above — this
+// walk touches the raw play objects (which carry `text`/`scoringPlay`/
+// scores), so it must never be reachable from an eager import.
+function flattenPlays(summary) {
+  const drives = summary?.drives?.previous ?? []
+  const plays = []
+  for (const drive of drives) {
+    for (const play of drive.plays ?? []) plays.push(play)
+  }
+  return plays
+}
+
+// The play at `index` in the same chronological order select.js's
+// selectPlayList walks (fetchGameSummary's `drives.previous[].plays[]`) —
+// this is the ADR-0001 reveal unit itself: `text` (the play description,
+// which spells out TOUCHDOWN/INTERCEPTION/etc. on a scoring or turnover
+// play — verified live against event 401772830's 4th play,
+// "...for 50 yards, TOUCHDOWN"), `scoringPlay`, and the score AS OF this
+// play. Call only from inside a SealBox render function for a play not yet
+// revealed. `GamePage`'s already-revealed play log also calls this, but
+// only for indices strictly below the persisted play cursor — i.e. plays
+// the viewer has already tapped through — which stays inside the spirit of
+// "reveal-only, gated by reveal state" even though there's no SealBox
+// wrapper left around a play once it's joined the log.
+export function selectPlayReveal(summary, index) {
+  const play = flattenPlays(summary)[index]
+  if (!play) return null
+  return {
+    text: play.text ?? '',
+    scoringPlay: Boolean(play.scoringPlay),
+    awayScore: Number(play.awayScore ?? 0),
+    homeScore: Number(play.homeScore ?? 0),
+  }
+}
+
 // 'W' / 'L' / 'T' for the given team in this game, or null if the game
 // hasn't finished (or the team isn't in it). Ties are real in the NFL
 // (regular season only) — ESPN represents one as `winner: false` on BOTH
