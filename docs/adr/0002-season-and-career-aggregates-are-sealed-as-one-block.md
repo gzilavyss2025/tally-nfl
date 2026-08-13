@@ -1,7 +1,7 @@
 # Season/career stat aggregates are sealed as one block, pending a real per-game cutoff
 
-ADR-0001 decided the reveal cursor's grain for a *single game*: drive-based,
-sealing that drive's score state. Building the Team and Player page
+ADR-0001 decided the reveal cursor's grain for a *single game*: play-based,
+sealing that play's score state. Building the Team and Player page
 wireframes surfaced a case ADR-0001 doesn't cover — data that aggregates
 across *many* games. A team's win-loss record and standing, and a player's
 season and career stat lines, are each a function of every game played up to
@@ -44,7 +44,7 @@ decision.
 
 ## Not solved here
 
-Once the drive-cursor/`revealedThrough`-equivalent from ADR-0001 is actually
+Once the play-cursor/`revealedThrough`-equivalent from ADR-0001 is actually
 implemented (see `src/CLAUDE.md`'s "Reveal granularity: decided, not
 implemented"), a Team/Player page reached *from* a specific game's screen
 should carry the same kind of `asOf` cutoff `bbsbh`'s `LinkScope` provides, so

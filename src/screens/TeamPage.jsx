@@ -7,14 +7,13 @@ import {
 } from '../api/team.js'
 import { selectWinner, selectFinalScore } from '../api/score.js'
 import { deriveTeamRecord } from '../api/derive.js'
-import { useAsync } from '../hooks/useAsync.js'
+import { usePageData } from '../hooks/usePageData.js'
 import { weekLabel } from '../lib/weeks.js'
 import { TeamLogo } from '../components/TeamLogo.jsx'
 import { TeamLink } from '../components/TeamLink.jsx'
 import { PlayerLink } from '../components/PlayerLink.jsx'
 import { BackBtn } from '../components/BackBtn.jsx'
 import { SectionTitle } from '../components/SectionTitle.jsx'
-import { AsyncGate } from '../components/AsyncGate.jsx'
 import { SealBox } from '../components/SealBox.jsx'
 
 // This screen's own "season" — see route.js's header comment, no season
@@ -38,10 +37,7 @@ async function loadTeamPage(id) {
 }
 
 export function TeamPage({ id }) {
-  const back = () => window.history.back()
-  const { loading, error, data } = useAsync(() => loadTeamPage(id), [id])
-
-  const gate = AsyncGate({ loading, error, data, noun: 'team', onBack: back })
+  const { data, gate, back } = usePageData(() => loadTeamPage(id), [id], 'team')
   if (gate) return gate
 
   const { identity, roster, scheduleEvents } = data

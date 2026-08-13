@@ -1,6 +1,7 @@
 import { SealBox } from './SealBox.jsx'
 import { TeamLogo } from './TeamLogo.jsx'
 import { TeamLink } from './TeamLink.jsx'
+import { GameLink } from './GameLink.jsx'
 import { selectMatchup } from '../api/select.js'
 import { selectFinalScore } from '../api/score.js'
 
@@ -33,6 +34,12 @@ export function GameCard({ event }) {
             }}
           </SealBox>
         )}
+        {/* Whole-game seal above is the slate's coarse stand-in (src/CLAUDE.md's
+            "Reveal granularity"); this always leads into the real ADR-0001/0003
+            play-by-play cursor on GamePage, live or not-yet-started alike. */}
+        <GameLink id={event.id} className="gamecard__detail">
+          Plays ›
+        </GameLink>
       </div>
     </li>
   )

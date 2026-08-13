@@ -1,25 +1,41 @@
 # src — the app shell
 
 React 18 + Vite SPA, phone-first, no backend. This file covers what's
-actually in `src/` today: the three screens and the router shell, the
+actually in `src/` today: the four screens and the router shell, the
 `SealBox` spoiler mechanism, the design system tokens, and the team-ID
 crosswalk. The data layer has its own file (`src/api/CLAUDE.md`); the
 always-loaded root `CLAUDE.md` carries the spoiler-rule summary and the
 high-level "what's unbuilt" map.
 
+**Unit tests** (`npm run test`, Vitest) cover the pure logic layer only —
+`route.js`, `lib/weeks.js`, `lib/playCursor.js`, `api/select.js`/`score.js` —
+colocated as `*.test.js` next to the module they cover. No component/render
+tests yet (`environment: 'node'`, no jsdom) — that's a deliberate scope
+line, not an oversight; see `vite.config.js`'s `test` block comment. Every
+new pure module added to `src/lib/` or `src/api/` should get a `*.test.js`
+alongside it, the same way every new reveal-only selector gets the
+spoiler-free/reveal-only split — this is the version of that discipline for
+logic correctness rather than spoiler correctness.
+
 ## Screens, routing, fetching (`src/App.jsx`, `src/lib/`, `src/screens/`)
 
-Three screens, wireframe-stage — real fetches against live ESPN endpoints,
-but shallower than `bbsbh`'s equivalents (no per-game `asOf` cutoff, no
-drive-level reveal — see "Reveal granularity" below):
+Four screens, wireframe-stage — real fetches against live ESPN endpoints,
+but shallower than `bbsbh`'s equivalents (no per-game `asOf` cutoff for
+`TeamPage`/`PlayerPage` — see ADR-0002's "Not solved here"):
 
 - **`WeekPage`** (`/`, `/week/{seasonType}/{week}`) — the NFL analog of
   `bbsbh`'s day-shaped `GameSelect`, but week-shaped, since a week (not a
   day) is football's scheduling unit. Season-type tabs (Preseason/Regular/
   Postseason) + prev/next week arrows, driven by `src/lib/weeks.js`'s
-  `SEASON_WEEKS` list, over one `fetchScoreboard` call. One `SealBox` per
-  game (`GameCard`), same grain as the original demo — the drive-cursor
-  reveal ADR-0001 designed still isn't implemented (see below).
+  `SEASON_WEEKS` list, over one `fetchScoreboard` call. One compact
+  `SealBox` per game (`GameCard`) for an at-a-glance final score — a
+  deliberately coarser stand-in that stays even now `GamePage` exists,
+  since a slate view isn't the place for a play-by-play cursor — plus a
+  `GameLink` ("Plays ›") into `GamePage` for the real ADR-0001/0003 grain.
+- **`GamePage`** (`/game/{id}`) — the play-by-play screen implementing the
+  ADR-0001/0003 reveal cursor (see "Reveal granularity" below for how).
+  Reached from `WeekPage`'s `GameLink`; nothing links to it from
+  `TeamPage`'s schedule rows yet (see "What to build next").
 - **`TeamPage`** (`/team/{id}`) — header, one `SealBox` for record+standing
   (`deriveTeamRecord`, reveal-only — see ADR-0002), roster grouped by
   offense/defense/specialTeam (+ an Injured/Suspended list) linking to
@@ -33,22 +49,53 @@ drive-level reveal — see "Reveal granularity" below):
   `teamId` specifically so the right team's roster can be re-fetched.
 
 **Routing** (`src/lib/route.js`, `src/lib/nav.js`/`nav.jsx`) is a tiny
-hand-rolled History-API router, no dependency — three route shapes doesn't
-justify pulling in a routing library, same reasoning as `bbsbh`'s
-`lib/route.js`. `App.jsx` owns the one `useState<route>` + `popstate`
-listener; `NavProvider` threads `go` through context so `TeamLink`/
-`PlayerLink` anywhere in the tree can navigate without a prop drilled
-through every intermediate component. Fixed to the 2025 season — no season
-picker exists yet (see route.js's header comment).
+hand-rolled History-API router, no dependency — a handful of route shapes
+doesn't justify pulling in a routing library, same reasoning as `bbsbh`'s
+`lib/route.js`. Table-driven, not an if/else chain: `route.js`'s `ROUTES`
+array is the single source of truth for both parsing a path AND building
+one back out (`weekPath`/`gamePath`/`teamPath`/`playerPath` are thin
+wrappers over it) — registering page N+1 is one entry in that table, not a
+hand-edit in both directions like it was with 3 routes. `App.jsx`'s own
+`PAGES` map (`route.name` -> component) is the other half of that
+same "adding a page is one line" property — no if/else there either.
+`App.jsx` owns the one `useState<route>` + `popstate` listener;
+`NavProvider` threads `go` through context so `TeamLink`/`PlayerLink`/
+`GameLink` anywhere in the tree can navigate without a prop drilled through
+every intermediate component. Fixed to the 2025 season — no season picker
+exists yet (see route.js's header comment). `route.js` itself imports no
+React/JSX on purpose, so `route.test.js` exercises parse/build without a
+DOM — see the unit-test note above.
 
-**Fetching** (`src/hooks/useAsync.js`) — every screen's data flows through
-one `useAsync(loadFn, deps)` call (ported from `bbsbh`, sport-agnostic as
-written): tracks loading/error/data, guards against an out-of-order
+Each route can opt into `remountOnNavigate: true` (only `game` does today)
+— App.jsx then keys that page by its full route so navigating between two
+instances of it (game A -> game B) unmounts/remounts rather than
+re-rendering in place. Most screens don't need this (`useAsync`'s deps
+array already refetches cleanly on a prop change); it's for a screen that
+holds OTHER per-instance state that must reset on navigation, the way
+`GamePage`'s `usePlayCursor` does (see "Reveal granularity" below). Reach
+for this the next time a screen grows local state keyed to its subject —
+don't hand-roll a one-off key prop for it.
+
+**Fetching** (`src/hooks/useAsync.js`, `src/hooks/usePageData.js`) — every
+screen's data flows through `usePageData(loadFn, deps, noun)`, which wraps
+`useAsync` (tracks loading/error/data, guards against an out-of-order
 response clobbering a newer one after a fast nav, keeps stale-while-
-revalidate data on a transient refetch error. `TeamPage`/`PlayerPage` each
-define their own local `loadTeamPage`/`loadPlayerPage` orchestration
-function (a `Promise.all` over 2-3 fetches, shaped into what the screen
-renders) colocated in the screen file, same convention `bbsbh`'s
+revalidate data on a transient refetch error — ported from `bbsbh`,
+sport-agnostic as written) together with the `AsyncGate` loading/error/empty
+check and a stock `back = () => window.history.back()`, returning
+`{ data, gate, back }`. This is the boilerplate every screen was repeating
+by copy-paste before there were four of them; a new screen gets it for
+free with `const { data, gate, back } = usePageData(loadFn, deps, noun)`.
+Two usage shapes, both still valid — `if (gate) return gate` for a screen
+that renders nothing else while loading (`GamePage`/`TeamPage`/
+`PlayerPage`), or `{gate || <realContent/>}` for a screen that keeps its
+own chrome mounted underneath (`WeekPage`'s header/tabs stay up during a
+week-to-week refetch). A screen that needs a check beyond loading/error/
+empty (`PlayerPage`'s "found the team but not this player on its roster")
+still does that itself, after `gate` comes back null. `TeamPage`/
+`PlayerPage` each define their own local `loadTeamPage`/`loadPlayerPage`
+orchestration function (a `Promise.all` over 2-3 fetches, shaped into what
+the screen renders) colocated in the screen file, same convention `bbsbh`'s
 `TeamPage.jsx`/`PlayerPage.jsx` use — not pulled into `src/api/` unless a
 second screen needs the same orchestration.
 
@@ -98,51 +145,73 @@ The corresponding CSS (`.sealbox.cover`, `.cover__lock`, `.cover__main`,
 `.sealbox--compact`, `.statgrid`, the `reveal` keyframe) lives in
 `src/index.css`, also copied verbatim.
 
-## Reveal granularity: decided, not implemented
+## Reveal granularity: implemented (`GamePage`)
 
 Baseball's cursor (`revealedThrough`, a half-inning index persisted to
-`localStorage`) has no equivalent here yet. The design is settled —
-`docs/adr/0001-drive-is-the-reveal-cursor-sealed-value-is-score-state.md`
-picks **drive** as the reveal cursor and **score state as of that drive's
-end** as what's sealed at each step, verified against two live ESPN
-`summary` responses including an OT game — but there is no code
-implementing it: no cursor state, no persistence, no drive navigator
-component. `docs/domain-sketch.md` has the fuller rationale (why quarter
-was too coarse, why scoring-play-alone doesn't track "how far into the
-broadcast am I") if you need the tradeoffs before building the navigator,
-but the decision itself is in the ADR, not the sketch.
+`localStorage`) now has an equivalent: `src/hooks/usePlayCursor.js`, at the
+ADR-0001 play grain, stepped one play at a time per ADR-0003 (no scrubber,
+no jump-to-arbitrary-play), consumed by `GamePage`. `docs/domain-sketch.md`
+still has the fuller "why quarter/drive lost" rationale if you need it, but
+the decisions themselves are in `docs/adr/0001-*.md` and
+`docs/adr/0003-*.md`.
 
-Two things the ADR flags that any future drive-navigator component must
-handle, not just the data layer:
-- **OT is not a distinct structure in ESPN's feed** — an OT drive is a
-  normal entry in `drives.previous` with `period.number: 5`, appended to
-  the same array as regulation. A drive navigator must gate OT itself
-  (hide it from the up-front list, unlock one entry at a time only as the
-  cursor advances into it), the same way `bbsbh` ADR-0008 gates extra
-  innings — nothing in the feed does this for you.
-- Drive counts aren't symmetric between teams (one team can have 4 drives
-  to the other's 6 by half), so whatever renders the drive list can't
-  reuse `bbsbh`'s two-parallel-rows `RollingLine` layout unmodified; it
-  needs a single interleaved timeline.
+How the pieces fit together:
+- **Data split** — `src/api/select.js`'s `selectPlayList(summary)` flattens
+  `drives.previous[].plays[]` into a spoiler-free list (down/distance,
+  clock, period, possession team), safe to call eagerly; `src/api/score.js`'s
+  `selectPlayReveal(summary, index)` re-flattens independently (same
+  duplication rationale as `selectFinalScore`/`selectWinner`) and returns
+  the one play's `text`/`scoringPlay`/`awayScore`/`homeScore` — verified
+  live that a play's own `text` and `type.text` spell out TOUCHDOWN/
+  INTERCEPTION/etc. on the play itself, not just the drive summary, so
+  both fields had to move to the reveal-only side, not just the score.
+- **Cursor state** — `usePlayCursor(gameId, total)` is a flat,
+  strictly-increasing play index (not a `{driveIndex, playIndex}` pair —
+  ADR-0003 rejected pairing since there's no jump/seek to make it useful),
+  persisted to `localStorage` per game. The count itself carries no spoiler
+  content, so it's read/written outside any `SealBox`; only the play data
+  at each index is reveal-gated. The clamp/step arithmetic itself lives in
+  `src/lib/playCursor.js` as plain functions (`clampCount`/`nextCount`/
+  `prevCount`/`parseStoredCount`/...), unit-tested in `playCursor.test.js`
+  without touching React or `localStorage` — the hook is just `useState` +
+  a `try/catch` around `window.localStorage` wrapping those functions.
+- **The stepper IS a `SealBox`** — `GamePage` doesn't hand-roll a reveal
+  mechanism. The upcoming play is a single `SealBox` keyed by
+  `cursor.revealedCount`; tapping it reveals that one play and its
+  `onReveal` advances the cursor, which changes the key and mounts a fresh
+  (sealed) `SealBox` for the next play. A separate "Prev" button retreats
+  the cursor, which — via the same key change — remounts the `SealBox`
+  unrevealed again for that play: exactly the "re-sealing happens by the
+  parent remounting with a fresh key" mechanism `SealBox.jsx`'s own header
+  comment describes, just the first caller to actually use it. Already-
+  revealed plays render as a plain, non-sealed log below (indices
+  `< cursor.revealedCount`) — calling `selectPlayReveal` for those is safe
+  because the cursor itself gates which indices are reachable, the same
+  "reveal-only, gated by reveal state" spirit as calling it inside a
+  `SealBox` render function, just without a literal wrapper once a play
+  has joined the log.
+- **OT gate turned out to be free.** ADR-0003 anticipated needing a
+  separate explicit "enter overtime" acknowledgment before crossing from
+  regulation into OT (mirroring `bbsbh` ADR-0008's extra-innings gate).
+  Building it revealed that's unnecessary here: a step-only cursor can only
+  ever reach an OT play by having already revealed every regulation play
+  in order — there's no list/jump surface for an OT section to leak
+  through the way ADR-0001 worried about. `nextPlayLabel()` also never
+  renders a total-play count for exactly this reason (an unusually high
+  count could hint at OT before it's been earned the normal way).
 
-No component in `src/` touches `drives` yet — `src/api/game.js` fetches
-the full summary (which includes `drives.previous`) but nothing selects
-out of it. That selector, when written, should live in `src/api/` per that
-folder's own conventions (see `src/api/CLAUDE.md`), following the same
-spoiler-free/reveal-only split as `select.js`/`score.js` above: a
-drive-list selector exposing non-scoring detail (result, start/end,
-time of possession) can run eagerly; a selector exposing the score-state
-sealed at each drive must only run inside a `SealBox` render function.
-
-In the meantime, `WeekPage` and `TeamPage` seal the whole final score/result
-per game (one `SealBox`, whole game) rather than per-drive — a deliberately
-coarser stand-in, not an attempt at the ADR-0001 grain. Building these two
-screens also surfaced a *different* gap ADR-0001 doesn't cover at all: data
-that aggregates across many games (a team's record, a player's season/career
-stats) rather than sealing one game's outcome. See
+`WeekPage`'s `GameCard` still seals the whole final score in one `SealBox`
+rather than linking straight into play-by-play — a deliberately coarser
+at-a-glance view for a 16-game slate, not an attempt at the ADR-0001 grain;
+its `GameLink` is how a viewer opts into the real thing. `TeamPage`'s
+schedule rows do the same and don't yet link to `GamePage` at all (see
+"What to build next"). Building `TeamPage`/`PlayerPage` also surfaced a
+*different* gap ADR-0001 doesn't cover: data that aggregates across many
+games (a team's record, a player's season/career stats) rather than sealing
+one game's outcome. See
 `docs/adr/0002-season-and-career-aggregates-are-sealed-as-one-block.md` and
-`src/api/derive.js` — the first real instance of the reveal-only-derivation
-module this file used to flag as "not built yet."
+`src/api/derive.js` — the reveal-only-derivation module this file used to
+flag as "not built yet."
 
 ## Design system (`src/index.css` + `src/tokens/*`)
 
@@ -213,9 +282,17 @@ not here.
 
 ## What to build next (forward pointers)
 
-- The drive-cursor state and its `localStorage` persistence (see "Reveal
-  granularity" above) — no `revealedThrough`-equivalent exists yet; today's
-  per-game whole-score seal is a stand-in, not the ADR-0001 design.
+- `TeamPage`'s schedule rows don't link to `GamePage` yet — only
+  `WeekPage`'s `GameCard` does. Same gap for any other place a completed
+  game could deep-link into its play-by-play.
+- No bulk-advance/catch-up affordance on `GamePage` — someone opening the
+  app well after a broadcast started has to step through every prior play
+  one at a time (worst case ~150 taps). Deliberately deferred by ADR-0003
+  ("Not solved here"), not an oversight — revisit if usage shows it's a
+  real problem.
+- `GamePage` only reads `drives.previous`; a live ('in') game's in-progress
+  drive (likely `drives.current`, unverified) isn't handled — a live game
+  currently shows whatever plays are already final in `drives.previous`.
 - A per-game `asOf` cutoff for `TeamPage`/`PlayerPage`, once a screen can
   reach one of them *from* a specific game (see ADR-0002's "Not solved
   here") — today's single-SealBox-per-aggregate is coarser than that.

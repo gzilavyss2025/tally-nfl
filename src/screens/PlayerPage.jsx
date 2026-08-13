@@ -2,11 +2,10 @@ import { fetchTeamRoster } from '../api/team.js'
 import { fetchAthleteSeasonStats, selectPlayerBio } from '../api/player.js'
 import { selectTeamIdentity } from '../api/select.js'
 import { selectCareerStats } from '../api/derive.js'
-import { useAsync } from '../hooks/useAsync.js'
+import { usePageData } from '../hooks/usePageData.js'
 import { TeamLink } from '../components/TeamLink.jsx'
 import { BackBtn } from '../components/BackBtn.jsx'
 import { SectionTitle } from '../components/SectionTitle.jsx'
-import { AsyncGate } from '../components/AsyncGate.jsx'
 import { SealBox } from '../components/SealBox.jsx'
 
 const DASH = '—'
@@ -32,10 +31,7 @@ async function loadPlayerPage(teamId, playerId) {
 }
 
 export function PlayerPage({ teamId, id }) {
-  const back = () => window.history.back()
-  const { loading, error, data } = useAsync(() => loadPlayerPage(teamId, id), [teamId, id])
-
-  const gate = AsyncGate({ loading, error, data, noun: 'player', onBack: back })
+  const { data, gate, back } = usePageData(() => loadPlayerPage(teamId, id), [teamId, id], 'player')
   if (gate) return gate
 
   const { bio, team, statsPayload } = data

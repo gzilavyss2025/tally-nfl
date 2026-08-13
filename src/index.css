@@ -282,6 +282,100 @@ a {
 .gamecard__score {
   font-size: var(--fs-num-md);
 }
+.gamecard__detail {
+  color: var(--text-caption);
+  font-size: var(--fs-caption);
+}
+
+/* ---- Game page (play-by-play) ---- */
+.game-hub__id {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  margin: var(--space-4) 0 var(--space-1);
+}
+.game-hub__vs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-weight: var(--w-semibold);
+}
+.game-hub__at {
+  color: var(--text-caption);
+}
+.game-hub__status {
+  text-align: center;
+  color: var(--text-caption);
+  margin: 0 0 var(--space-4);
+}
+.game-hub__prekick {
+  text-align: center;
+  color: var(--text-muted);
+  padding: var(--space-8) var(--space-4);
+}
+
+.game-score {
+  text-align: center;
+  font-size: var(--fs-num-lg);
+  padding: var(--space-3) 0;
+}
+
+.playlog {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.playrow {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: var(--bw-hair) solid var(--border-hairline);
+}
+.playrow--score {
+  border-left: var(--bw-heavy) solid var(--accent-positive);
+}
+.playrow__meta {
+  color: var(--text-caption);
+  margin-bottom: var(--space-1);
+}
+.playrow__text {
+  margin: 0 0 var(--space-1);
+}
+.playrow__score {
+  color: var(--text-caption);
+}
+
+.playstepper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+.playstepper__btn {
+  border: var(--bw-hair) solid var(--border-rule);
+  background: var(--surface-card);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-display);
+  min-height: var(--tap-min);
+  cursor: pointer;
+}
+.playstepper__btn:disabled {
+  color: var(--border-rule);
+  cursor: default;
+}
+.playstepper > .sealbox {
+  flex: 1;
+}
+.playstepper__done {
+  flex: 1;
+  text-align: center;
+  color: var(--text-caption);
+  padding: var(--space-3) 0;
+}
 
 /* ---- Team page ---- */
 .team-hub__id {
