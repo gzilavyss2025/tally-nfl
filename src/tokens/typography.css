@@ -1,67 +1,66 @@
 /* ============================================================
-   TYPOGRAPHY — Scorekeeper
-   One cohesive family (IBM Plex) across three roles:
-   - Plex Sans Condensed → athletic stat/section headers (uppercase, tracked)
-   - Plex Sans           → UI + body
-   - Plex Mono           → numbers, the ledger/scorebook figures
-   Plus one outlier for legibility:
-   - Newsreader → sentence-like copy that must read at small sizes in all
-     caps (play-by-play descriptions). A serif gives the play descriptions a
-     "box-score notes" editorial feel, distinct from the sans/mono elsewhere.
+   TYPOGRAPHY — Apple-derived house style (tally-nfl fork)
+   SF Pro Display (headings) + SF Pro Text (body/UI), substituted
+   with Inter for web (see fonts.css). Negative tracking, sentence
+   case everywhere — no condensed-uppercase chrome, no serif
+   exception (see root CLAUDE.md — the caps question is decided:
+   this system doesn't shout).
    ============================================================ */
 
 :root {
-  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", sans-serif;
-  --font-body:    "IBM Plex Sans", system-ui, sans-serif;
-  --font-mono:    "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
-  --font-read:    "Newsreader", Georgia, "Times New Roman", serif;
+  --font-display: "Inter", -apple-system, BlinkMacSystemFont, ui-sans-serif, system-ui, sans-serif;
+  --font-body:    "Inter", -apple-system, BlinkMacSystemFont, ui-sans-serif, system-ui, sans-serif;
 
-  /* Weights */
+  /* Weights — Apple's set is 300/400/600, plus 700 reserved for editorial
+     lockups only. No 500 exists in this system; --w-medium aliases to
+     --w-regular so nothing accidentally introduces an off-system weight. */
   --w-regular: 400;
-  --w-medium:  500;
+  --w-medium:  400;
   --w-semibold:600;
   --w-bold:    700;
 
-  /* Type scale (px) — compact, second-screen mobile first */
-  --fs-display: 34px;   /* screen titles / big scores */
-  --fs-h1:      26px;
-  --fs-h2:      21px;
-  --fs-h3:      17px;
-  --fs-label:   13px;   /* condensed uppercase section labels */
-  --fs-body:    15px;
-  --fs-small:   13px;
-  --fs-caption: 11px;
-  --fs-num-xl:  40px;   /* revealed final score */
-  --fs-num-lg:  22px;
-  --fs-num-md:  16px;
+  /* Type scale (px), mapped onto Apple's scale — see docs/design-system.md
+     "Type Scale" table. Second-screen mobile first, so this app's headings
+     sit a notch below Apple's own marketing-page sizes. */
+  --fs-display: 56px;   /* screen titles / big scores — unused today */
+  --fs-h1:      40px;
+  --fs-h2:      28px;
+  --fs-h3:      21px;
+  --fs-label:   14px;
+  --fs-body:    17px;
+  --fs-small:   14px;
+  --fs-caption: 12px;
+  --fs-num-xl:  44px;   /* revealed final score */
+  --fs-num-lg:  28px;
+  --fs-num-md:  17px;
 
   /* Line heights */
-  --lh-tight:  1.05;
-  --lh-snug:   1.25;
-  --lh-body:   1.5;
+  --lh-tight:  1.14;
+  --lh-snug:   1.24;
+  --lh-body:   1.47;
 
-  /* Letter spacing */
-  --ls-label:  0.09em;   /* uppercase condensed labels */
-  --ls-caps:   0.05em;
-  --ls-num:    0.01em;
+  /* Letter spacing — negative tracking, Apple's signature, not uppercase
+     tracking */
+  --ls-label:  -0.01em;
+  --ls-caps:   -0.005em;
+  --ls-num:    -0.01em;
 
   /* ---- Semantic text roles ---- */
   --text-display-font: var(--font-display);
-  --text-num-font:     var(--font-mono);
+  --text-num-font:     var(--font-body);
   --text-body-font:    var(--font-body);
 }
 
 /* Reusable type helpers */
 .t-label {
-  font-family: var(--font-display);
-  font-weight: var(--w-semibold);
+  font-family: var(--font-body);
+  font-weight: var(--w-regular);
   font-size: var(--fs-label);
   letter-spacing: var(--ls-label);
-  text-transform: uppercase;
   color: var(--text-caption);
 }
 .t-num {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-variant-numeric: tabular-nums;
   letter-spacing: var(--ls-num);
 }

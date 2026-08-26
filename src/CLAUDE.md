@@ -217,51 +217,66 @@ flag as "not built yet."
 
 All CSS lives in `src/index.css`, which `@import`s `src/tokens/*.css` in
 this order: `fonts.css`, `colors.css`, `typography.css`, `spacing.css`,
-`effects.css`. All five token files are copied verbatim from `bbsbh` (per
-root `CLAUDE.md` — don't fork; edit in place only for a genuinely new
-football token, e.g. a down-marker accent, and consider porting
-brand-level changes back to `bbsbh`).
+`effects.css`. As of 2026-08-26 all five token files hold **Apple-derived
+values** (root `CLAUDE.md`'s Design system section has the fork rationale;
+`docs/design-system.md` is the full reference). The migration kept every
+semantic alias name component CSS already referenced (`--bg-canvas`,
+`--text-heading`, `--accent-primary`, ...) and repointed only the
+primitives underneath, so `src/index.css`'s component rules needed just
+two explicit fixups beyond the token swap: `.weektabs__tab` and
+`.playstepper__btn` now use `--radius-pill` (980px) instead of a card
+radius and dropped their `text-transform: uppercase`, matching Apple's
+"buttons are pills, chrome doesn't shout" rules. `.paper-grid` (the class
+every screen's root div carries) is now a flat `--bg-canvas` fill — the
+scorebook grid-paper texture it used to draw was a paper-desk metaphor
+this fork retired.
 
-- **`colors.css`** — paper/ink/kraft-tape palette (`--paper-0..3`,
-  `--ink-0..2`/`--graphite`, `--field`/`--clay` as positive/negative
-  accents, `--seal`/`--seal-hatch`/`--seal-ink` for spoiler covers) plus
-  semantic aliases (`--bg-canvas`, `--surface-card`, `--accent-positive`,
-  `--accent-negative`, `--seal-cover`, `--focus-ring`, ...). Use the
-  semantic aliases in component CSS, not the raw `--paper-*`/`--ink-*`
-  values. Also carries a win-probability chart pair
-  (`--winprob-home`/`--winprob-away`) and an `--allstar-blue` accent —
-  both are baseball-scoped names inherited with the file; there's no
-  football win-probability UI consuming them yet.
-- **`typography.css`** — `--font-display` (IBM Plex Sans Condensed,
-  chrome/labels), `--font-body` (IBM Plex Sans), `--font-mono` (IBM Plex
-  Mono, all numbers), `--font-read` (Newsreader, sentence-like copy e.g.
-  play-by-play). Two ready-made classes: `.t-label` (condensed uppercase
-  section label) and `.t-num` (mono, tabular figures) — `App.jsx`'s
-  `GameCard` already uses both.
-- **`spacing.css`** — 4px grid (`--space-0..16`), radii (`--radius-xs..lg`,
-  `--radius-pill`), a linescore cell-size pair (`--cell-size`/`--cell-gap`,
-  still unused — no linescore-shaped grid exists here yet), a six-rung
-  headshot size scale (`--shot-xl-w/h` down to `--shot-2xs-w/h` — `PlayerPage`
-  now uses the largest rung, `--shot-xl-w/h`, for its hero headshot, exactly
-  the use the comment already named it for; the other five rungs are still
-  unused), and app-frame constants (`--app-width: 390px`, `--tap-min: 44px`).
-- **`effects.css`** — shadows (`--shadow-card/raised/sticky`), the pressed
-  cell inset (`--inset-cell`), motion tokens (`--ease-standard/out`,
-  `--dur-fast/med/slow`), and the `--seal-texture`/`--il-texture`
-  diagonal-hatch gradients. `.paper-grid` (the faint scorebook grid-paper
-  background class `App.jsx` applies to its root div) is defined here.
-- **`fonts.css`** — one Google Fonts `@import` for all four families;
-  no self-hosting yet.
+- **`colors.css`** — Apple primitives (`--color-apple-blue`/`--color-link-
+  blue`/`--color-signal-blue` — three distinct jobs, never mixed in one
+  element; `--color-carbon`/`--color-frost`/`--color-ice`/`--color-smoke`/
+  `--color-graphite`/`--color-ash`/`--color-mist`/`--color-pebble`/
+  `--color-cloud`) plus the same semantic aliases as before
+  (`--bg-canvas`, `--surface-card`, `--accent-positive`, `--seal-cover`,
+  `--focus-ring`, ...). `--surface-card` intentionally equals
+  `--bg-canvas` — Apple's system has no card fill, only
+  `--border-hairline` differentiates a row from the page. Use the
+  semantic aliases in component CSS, never a raw `--color-*` primitive.
+  `--winprob-home`/`--winprob-away`/`--winprob-line` are still unused,
+  now mapped onto the blue/carbon palette instead of the old navy/clay one.
+- **`typography.css`** — `--font-display`/`--font-body` both resolve to
+  Inter (`fonts.css`'s import) with an `-apple-system`/`system-ui` stack
+  ahead of it, so real Apple hardware renders actual SF Pro — Inter is
+  the substitute `docs/design-system.md` itself specifies. `.t-label`
+  (small UI label) and `.t-num` (tabular-nums numeric figures) both stay
+  as class names, restyled: no uppercase, no condensed cut, no mono font —
+  `.t-num` gets its tabular alignment from `font-variant-numeric` on the
+  body font, not a separate monospace family. `--font-mono`/`--font-read`
+  (mono, Newsreader serif) are retired — nothing consumed them and
+  Apple's system has no serif exception.
+- **`spacing.css`** — 4px grid unchanged. Radii collapsed to Apple's two
+  values only: `--radius-xs/sm/md/lg` all resolve to 8px (cards/images/
+  inputs), `--radius-pill` to 980px (every interactive button/tag) — see
+  `docs/design-system.md`'s radius table. Headshot scale, cell-size pair,
+  and app-frame constants unchanged.
+- **`effects.css`** — `--shadow-card/raised/sticky` are now `none` (Apple's
+  system has no card/button elevation — hierarchy comes from surface color
+  + hairline borders); `--shadow-xl` is the one shadow the system allows,
+  reserved for hero/feature imagery, unused today. `--inset-cell` (the
+  pressed-paper effect) is retired to `none`. `--seal-texture` keeps its
+  diagonal-hatch mechanism but now draws from grayscale `--seal`/
+  `--seal-hatch` instead of kraft amber. `--il-texture` (baseball injured-
+  list tape, never consumed) was dropped rather than recolored.
+- **`fonts.css`** — one Google Fonts `@import`, now Inter only (weights
+  300/400/600/700) instead of the four IBM Plex/Newsreader families.
 
-**The ALL-CAPS invariant is deliberately not ported.** `bbsbh` forces
+**The ALL-CAPS question is now decided, not deferred.** `bbsbh` forces
 `#root * { text-transform: uppercase }` with exempted sentence-copy
-surfaces, guarded by `scripts/check-caps.mjs`. Neither the CSS rule nor
-the guard script exists in this repo — see the block comment at the top of
-`src/index.css`. Don't hand-roll `.toUpperCase()` on components to
-compensate (that's exactly the drift the guard prevents in `bbsbh`); the
-caps question needs a decision (does football commentary want the same
-shouted-chrome-vs-sentence-copy split?) before either the CSS rule or its
-guard gets ported.
+surfaces, guarded by `scripts/check-caps.mjs`. This fork's answer is no —
+Apple's own component specs never shout — so neither that CSS rule nor
+the guard script gets ported, and the three spots that still had isolated
+uppercase (`.t-label`, `.weektabs__tab`, `.cover__main`) had it removed as
+part of the token migration. See the block comment at the top of
+`src/index.css`.
 
 ## Team-ID crosswalk (`src/data/teams.js`)
 

@@ -1,20 +1,29 @@
 /* ============================================================
-   EFFECTS — Scorekeeper
-   Shadows read like paper on a desk. Cells look pressed into
-   the page. Sealed covers carry a kraft diagonal hatch.
+   EFFECTS — Apple-derived house style (tally-nfl fork)
+   Apple's system deliberately avoids elevation: hierarchy comes
+   from surface color shifts and hairline borders, not shadows.
+   See docs/design-system.md "Elevation Philosophy" — the only
+   shadow in the system belongs on hero/feature imagery.
    ============================================================ */
 
 :root {
-  /* Elevation — soft, warm, low */
-  --shadow-card:   0 1px 2px rgba(22,34,47,0.08), 0 4px 12px rgba(22,34,47,0.06);
-  --shadow-raised: 0 2px 4px rgba(22,34,47,0.10), 0 8px 24px rgba(22,34,47,0.10);
-  --shadow-sticky: 0 -2px 10px rgba(22,34,47,0.08);
+  /* No drop shadows on cards, buttons, or nav — see the Don'ts in
+     docs/design-system.md. Kept as named tokens (rather than deleted) so a
+     component can't silently reintroduce elevation by inventing its own
+     box-shadow value. */
+  --shadow-card:   none;
+  --shadow-raised: none;
+  --shadow-sticky: none;
 
-  /* Pressed-into-paper inset (grid cells, revealed inset) */
-  --inset-cell: inset 0 1px 2px rgba(22,34,47,0.10);
+  /* The one shadow this system allows, for hero/feature images only —
+     see docs/design-system.md's Quick Start `--shadow-xl`. */
+  --shadow-xl: rgba(0, 0, 0, 0.22) 3px 5px 30px 0px;
 
-  /* Focus ring */
-  --ring: 0 0 0 3px rgba(47,110,79,0.35);
+  /* No pressed/embossed surfaces (that was the "paper" metaphor) */
+  --inset-cell: none;
+
+  /* Focus ring — rgba of --color-apple-blue */
+  --ring: 0 0 0 3px rgba(0, 113, 227, 0.35);
 
   /* Motion */
   --ease-standard: cubic-bezier(0.2, 0.0, 0.0, 1.0);
@@ -23,26 +32,12 @@
   --dur-med:    220ms;
   --dur-slow:   360ms;
 
-  /* Sealed cover — kraft tape look, reused via background */
+  /* Sealed cover — a solid dark surface with a subtle diagonal hatch, the
+     one deliberately non-flat texture in the system (functional spoiler
+     affordance, not decoration — see root CLAUDE.md's Design system
+     section). --seal/--seal-hatch are grayscale, defined in colors.css. */
   --seal-texture: repeating-linear-gradient(
       -45deg,
       var(--seal) 0px, var(--seal) 6px,
       var(--seal-hatch) 6px, var(--seal-hatch) 8px);
-
-  /* Injured-list tape — the same diagonal-hatch weave as the kraft seal but in
-     the clay/seam-red family, so the IL banner reads as a sibling of the amber
-     rehab tape. White text holds WCAG AA (≥5.4:1) against both clay stripes. */
-  --il-texture: repeating-linear-gradient(
-      -45deg,
-      var(--clay) 0px, var(--clay) 6px,
-      var(--clay-deep) 6px, var(--clay-deep) 8px);
-}
-
-/* Faint scorebook grid-paper texture — apply to canvas backgrounds */
-.paper-grid {
-  background-color: var(--bg-page);
-  background-image:
-    linear-gradient(var(--rule-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--rule-grid) 1px, transparent 1px);
-  background-size: 24px 24px;
 }
