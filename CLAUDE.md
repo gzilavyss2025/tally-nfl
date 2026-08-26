@@ -93,27 +93,36 @@ deliberately sport-agnostic; don't add football-specific logic to it.
 **Do not hand-roll spoiler-hiding with CSS `display`/`visibility`.** If a
 new surface needs to hide something until reveal, wrap it in `SealBox`.
 
-## Design system (shared with `bbsbh`, do not fork)
+## Design system (forked from `bbsbh` as of 2026-08-26 — read before any UI/design work)
 
-`src/tokens/*.css` is the Tally brand, copied verbatim from `bbsbh`:
-paper/ink/kraft-tape palette, IBM Plex (Sans Condensed for chrome, Mono for
-all numbers, Newsreader as the one serif exception for sentence-like
-play-by-play copy), a 4px spacing grid, and a `--seal-*` color set reserved
-for spoiler covers. Per-token-file breakdown (which tokens are already used
-vs. inherited-but-unused) is in `src/CLAUDE.md`.
+**House style is now Apple's design language** (white/`#f5f5f7` canvas, one
+blue accent, SF Pro, 980px pill buttons, hairline borders, no card shadows)
+— full color/type/spacing/component spec lives in `docs/design-system.md`.
+This is a **deliberate fork away from `bbsbh`'s paper/ink/kraft-tape/IBM
+Plex brand**, not a drift; do not port these tokens back to `bbsbh`, and
+don't re-introduce `bbsbh`-brand values here.
 
-- Edit tokens in place only if football needs a genuinely new one (e.g. a
-  down-marker accent); consider porting brand-level changes back to `bbsbh`.
-- All numeric values render with `.t-num` (mono, tabular figures); section
-  labels use `.t-label` (condensed uppercase).
-- The **ALL-CAPS invariant** that `bbsbh` enforces
-  (`#root * { text-transform: uppercase }` + a `check-caps.mjs` guard
-  script) has been **deliberately left off** here — see the comment block
-  at the top of `src/index.css`. Don't hand-roll `.toUpperCase()` on
-  components to compensate; that's exactly the drift the guard exists to
-  prevent in `bbsbh`. Decide the caps question first (does football
-  commentary want the same shouted-chrome-vs-sentence-copy split?), then
-  port the guard scripts from `bbsbh` if so.
+- `src/tokens/*.css` has been migrated: all five files now define
+  Apple-derived values under the same semantic alias names the app already
+  consumed (`--bg-canvas`, `--text-heading`, `--accent-primary`, ...), so
+  no component CSS had to change its variable references — only the
+  primitives underneath, plus two explicit radius/uppercase fixups
+  (`.weektabs__tab`, `.playstepper__btn`) called out in `src/CLAUDE.md`.
+- The `--seal-*` spoiler-cover color set is a **functional** exception, not
+  a brand choice — it exists to satisfy `SealBox`'s reveal mechanism (see
+  the invariant above). It's now a solid dark (`--color-carbon`) cover with
+  a grayscale hatch, not the old kraft amber — recolored, never repurposed
+  for anything decorative.
+- `.t-num` stays (mono tabular figures retired in favor of SF Pro Text with
+  `font-variant-numeric: tabular-nums` — same alignment behavior, on-brand
+  font). `.t-label` stays as a class name but dropped the condensed/
+  uppercase/tracked styling — this system doesn't shout (see below).
+- The **ALL-CAPS question is decided, not deferred**: this house style has
+  no shouted-uppercase chrome anywhere (`docs/design-system.md` has no
+  uppercase example in any component spec), so `bbsbh`'s
+  `#root * { text-transform: uppercase }` + `check-caps.mjs` guard does
+  **not** get ported, full stop — see the comment block at the top of
+  `src/index.css`.
 
 ## Architecture (map) — what's genuinely unbuilt
 

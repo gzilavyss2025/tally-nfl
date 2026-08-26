@@ -1,8 +1,10 @@
 /* ============================================================
-   FONTS — Scorekeeper
-   Loaded from Google Fonts. These are SUBSTITUTES: no original
-   brand font files were provided with the project. See the
-   Scorekeeper Design System readme.
+   FONTS — Apple-derived house style (tally-nfl fork)
+   SF Pro isn't licensed for web embedding; Inter is the
+   substitute docs/design-system.md itself specifies for both SF
+   Pro Display and SF Pro Text. -apple-system/system-ui in the
+   font-family stack (see typography.css) picks up real SF Pro on
+   Apple hardware — Inter covers everywhere else.
    ============================================================ */
 
-@import url("https://fonts.googleapis.com/css2?family=Newsreader:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap");

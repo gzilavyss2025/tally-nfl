@@ -1,11 +1,12 @@
 /* ============================================================
    Tally NFL
-   App styling built on the shared Tally Scorekeeper Design
-   System tokens (copied from Tally Baseball — see
-   docs/STARTER.md for what's shared vs. what to reinvent).
-   Metaphor: paper on a desk. Warm manila canvas, cream cards,
-   navy ink, kraft-tape spoiler covers. All numbers are mono
-   tabular figures; structural labels are condensed uppercase.
+   App styling built on the Apple-derived house style (see
+   docs/design-system.md and root CLAUDE.md's Design system
+   section) — a deliberate fork away from Tally Baseball's
+   paper/ink/kraft-tape tokens. Near-white canvas, one blue
+   accent, hairline borders, no card shadows. The sealed cover
+   (SealBox) is the one non-flat surface, a functional spoiler
+   affordance rather than a brand decoration.
    ============================================================ */
 @import './tokens/fonts.css';
 @import './tokens/colors.css';
@@ -23,25 +24,22 @@
   box-sizing: border-box;
 }
 
-/* === ALL-CAPS INVARIANT (carried over from Tally Baseball) ===
+/* === ALL-CAPS INVARIANT — decided, not ported ===
    bbsbh renders every page uppercase via `#root * { text-transform:
-   uppercase }`, with a small set of deliberately-exempted "reads like a
-   sentence" surfaces (play-by-play copy, explainer paragraphs), guarded by
-   scripts/check-caps.mjs so nothing can quietly opt out. Deliberately NOT
-   turned on here yet — decide first whether football commentary/drive
-   descriptions want the same shouted-chrome-vs-sentence-copy split baseball
-   uses, then port scripts/check-caps.mjs + scripts/check-name-casing.mjs
-   from bbsbh once that's settled. Until then, do not hand-roll
-   `.toUpperCase()` per component — that's the exact drift the caps guard
-   exists to prevent. */
+   uppercase }`, guarded by scripts/check-caps.mjs. The Apple-derived house
+   style settles the question this repo used to leave open: this system
+   doesn't shout — no condensed-uppercase chrome anywhere (see
+   docs/design-system.md, which has no uppercase example in any component
+   spec). Don't hand-roll `.toUpperCase()` or add a caps guard script; the
+   answer is simply no. */
 
-/* Faint scorebook grid-paper texture — apply to canvas backgrounds */
+/* Was a scorebook grid-paper texture in the bbsbh original; the Apple fork
+   is flat canvas with no background texture (see docs/design-system.md's
+   Imagery section — "no illustrations, no abstract graphics"). Kept as a
+   class (rather than removed from every screen's root div) so the token
+   swap stays a CSS-only change. */
 .paper-grid {
   background-color: var(--bg-page);
-  background-image:
-    linear-gradient(var(--rule-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--rule-grid) 1px, transparent 1px);
-  background-size: 24px 24px;
 }
 
 /* ---- SealBox (copied verbatim from bbsbh/src/components/SealBox.jsx) ---- */
@@ -65,20 +63,21 @@
 }
 
 .cover__main {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 14px;
-  font-weight: var(--w-bold);
+  font-weight: var(--w-semibold);
   color: var(--seal-ink);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
 }
 
+.sealbox.cover {
+  border-radius: var(--radius-md);
+}
 .sealbox.cover.sealbox--compact {
   min-height: 0;
   flex-direction: row;
   gap: 8px;
   padding: 10px 14px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-pill);
 }
 .sealbox--compact .cover__lock {
   font-size: 15px;
@@ -194,12 +193,10 @@ a {
   flex: 1;
   border: var(--bw-hair) solid var(--border-rule);
   background: var(--surface-card);
-  border-radius: var(--radius-sm);
-  padding: var(--space-2);
-  font-family: var(--font-display);
+  border-radius: var(--radius-pill);
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-body);
   font-size: var(--fs-caption);
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
   color: var(--text-muted);
   cursor: pointer;
 }
@@ -357,9 +354,9 @@ a {
 .playstepper__btn {
   border: var(--bw-hair) solid var(--border-rule);
   background: var(--surface-card);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-pill);
   padding: var(--space-2) var(--space-3);
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   min-height: var(--tap-min);
   cursor: pointer;
 }
