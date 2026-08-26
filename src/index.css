@@ -119,6 +119,34 @@ a {
   padding: var(--space-4);
   padding-bottom: var(--space-12);
 }
+@media (min-width: 600px) {
+  .screen {
+    max-width: var(--content-width-tablet);
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+  }
+}
+@media (min-width: 960px) {
+  .screen {
+    max-width: var(--content-width-desktop);
+    padding-left: var(--space-8);
+    padding-right: var(--space-8);
+  }
+}
+@media (min-width: 1280px) {
+  .screen {
+    max-width: var(--content-width-wide);
+  }
+}
+/* GamePage is a sequential reveal log, not grid-shaped content — see
+   src/CLAUDE.md's "Reveal granularity": ADR-0003 rejects any jump/scrub
+   affordance for the play cursor, so this stays a centered reading column
+   rather than growing into the wider grid tiers above. */
+@media (min-width: 960px) {
+  .screen.game {
+    max-width: var(--content-width-reading);
+  }
+}
 
 .plink {
   border: none;
@@ -181,6 +209,24 @@ a {
   padding-right: var(--space-4);
   border-bottom: var(--bw-hair) solid var(--border-hairline);
 }
+/* Bleed matches .screen's own left/right padding at each tier so the sticky
+   bar still reaches the screen's edges instead of leaving a gap. */
+@media (min-width: 600px) {
+  .weekhead {
+    margin-left: calc(var(--space-6) * -1);
+    margin-right: calc(var(--space-6) * -1);
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+  }
+}
+@media (min-width: 960px) {
+  .weekhead {
+    margin-left: calc(var(--space-8) * -1);
+    margin-right: calc(var(--space-8) * -1);
+    padding-left: var(--space-8);
+    padding-right: var(--space-8);
+  }
+}
 .weekhead__title {
   padding-top: var(--space-2);
 }
@@ -239,6 +285,15 @@ a {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+}
+/* Desktop+: the week slate reflows into the design system's "Service Card
+   Grid" pattern (a symmetric grid of cards) instead of one long stack. */
+@media (min-width: 960px) {
+  .gamelist {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--space-4);
+  }
 }
 .gamelist__empty {
   padding: var(--space-6) 0;
@@ -386,6 +441,14 @@ a {
   font-size: var(--fs-h1);
   margin: 0 0 var(--space-1);
 }
+/* Desktop+: the "rhythm through scale shifts" the design system describes —
+   --fs-display exists in typography.css specifically for this and was
+   otherwise unused. */
+@media (min-width: 960px) {
+  .team-hub__name {
+    font-size: var(--fs-display);
+  }
+}
 .team-hub__standing {
   color: var(--text-caption);
 }
@@ -398,6 +461,16 @@ a {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+}
+/* Desktop+: same symmetric-grid reflow as .gamelist — each row's own
+   internal layout is untouched, only the list container becomes a grid. */
+@media (min-width: 960px) {
+  .roster-list,
+  .schedule-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-2) var(--space-4);
+  }
 }
 .roster-row,
 .schedule-row {
@@ -457,6 +530,11 @@ a {
   font-size: var(--fs-h1);
   margin: 0;
 }
+@media (min-width: 960px) {
+  .player-hero__name {
+    font-size: var(--fs-display);
+  }
+}
 .player-hero__num {
   color: var(--text-caption);
   margin-left: var(--space-2);
@@ -470,7 +548,7 @@ a {
 
 .factgrid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: var(--space-3);
   margin: var(--space-4) 0;
 }
