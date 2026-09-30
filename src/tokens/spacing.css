@@ -47,9 +47,27 @@
   --shot-2xs-w:  33px; --shot-2xs-h:   44px; /* box-score star / note / milestone */
 
   /* App frame */
-  --app-width:   390px;      /* iPhone-class second screen */
+  --app-width:   390px;      /* iPhone-class second screen — mobile tier only */
   --app-gutter:  16px;
   --tap-min:     44px;       /* min hit target */
+
+  /* Breakpoints — mirrored as literal px in index.css's @media queries
+     (custom properties aren't usable in media-query conditions). Keep both
+     in sync if these change. Mobile is everything below --bp-tablet. */
+  --bp-tablet:  600px;
+  --bp-desktop: 960px;
+  --bp-wide:    1280px;
+
+  /* Per-tier content widths — desktop/wide stay well under
+     docs/design-system.md's 1440px page cap so text/grids don't stretch
+     edge-to-edge. */
+  --content-width-tablet:  640px;
+  --content-width-desktop: 1040px;
+  --content-width-wide:    1200px;
+  /* GamePage is a sequential reveal log, not grid-shaped content — it keeps
+     this narrower reading column even at wide, per the design system's
+     "internal max-width for text-heavy blocks" rule. */
+  --content-width-reading: 680px;
 
   /* Borders */
   --bw-hair: 1px;
